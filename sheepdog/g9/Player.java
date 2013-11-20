@@ -31,11 +31,12 @@ public class Player extends sheepdog.sim.Player {
 
         // condition to use strategy should be put here
         Point moveTo;
-        if (true) {
-            //moveTo = fetch.move(dogs, sheeps);
+        if (dogs.length <=2) {
+            moveTo = fetch.move(dogs, sheeps);
+            System.out.println("\n" + fetch.toString());
+        } else {
             moveTo = sweep.move(dogs, sheeps);
             System.out.println("\n" + sweep.toString());
-            //System.out.print(moveTo.toString());
         }
         return moveTo.toSimPoint();
     }
