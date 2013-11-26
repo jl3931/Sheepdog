@@ -28,7 +28,7 @@ public class Sheepdog
     static boolean recompile = true;
     
     // print more details?
-    static boolean verbose = true;
+    static boolean verbose = false;
 
     // Step by step trace
     static boolean trace = true;
@@ -532,6 +532,8 @@ public class Sheepdog
 
 
     boolean validateMove(Point src, Point dst) {
+        if (Double.isNaN(dst.x) || Double.isNaN(dst.y))
+            return false;
         if (dst.x < 0 || dst.x > dimension)
             return false;
         if (dst.y < 0 || dst.y > dimension)

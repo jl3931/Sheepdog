@@ -1,16 +1,14 @@
 package sheepdog.g9;
 
+import java.util.LinkedList;
+
 public class Player extends sheepdog.sim.Player {
-    private int nblacks;
-    private boolean mode;
-    private Fetch fetch;
-    private Sweep sweep;
+    private LinkedList<Strategy> strategyStack;
 
     public void init(int nblacks, boolean mode) {
-        this.nblacks = nblacks;
-        this.mode = mode;
-        fetch = new Fetch(id, nblacks, mode);
-        sweep = new Sweep(id, nblacks, mode);
+        Global.nblacks = nblacks;
+        Global.mode = mode;
+        strategyStack = new LinkedList<Strategy>();
     }
 
     // Return: the next position
@@ -28,16 +26,21 @@ public class Player extends sheepdog.sim.Player {
             sheeps[i] = new Point(posSheeps[i]);
         }
 
-
         // condition to use strategy should be put here
-        Point moveTo;
-        if (dogs.length <=2) {
-            moveTo = fetch.move(dogs, sheeps);
-            System.out.println("\n" + fetch.toString());
-        } else {
-            moveTo = sweep.move(dogs, sheeps);
-            System.out.println("\n" + sweep.toString());
+        if(strategyStack.isEmpty()) {
+            System.out.println("new fetch");
+            double x = PlayerUtils.GATE.x;
+            double y = PlayerUtils.GATEOPENLEFT +
+                (PlayerUtils.GATEOPENRIGHT - PlayerUtils.GATEOPENLEFT) *
+                ((double)id / (dogs.length + 1));
+            Fetch fetch = new Fetch(id, strategyStack, -1, new Point(x, y));
+            strategyStack.push(fetch);
         }
+
+        Point moveTo;
+        Strategy currentStrategy = strategyStack.getLast();
+        moveTo = currentStrategy.move(dogs, sheeps);
+        System.out.println(currentStrategy.toString());
         return moveTo.toSimPoint();
     }
 }

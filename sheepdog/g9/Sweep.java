@@ -19,8 +19,8 @@ public class Sweep extends Strategy {
     private double width;
     private double height;
 
-    public Sweep (int id, int nblacks, boolean mode) {
-        super(id, nblacks, mode);
+    public Sweep (int id, LinkedList<Strategy> strategyStack) {
+        super(id, strategyStack);
         stage = SweepStage.MOVE_TO_GATE;
         width = PlayerUtils.WIDTH;
         height = PlayerUtils.HEIGHT;
