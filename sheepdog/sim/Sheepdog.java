@@ -22,13 +22,39 @@ enum PType {
 
 public class Sheepdog
 {
+	class SimGlobals {
+		public int autodelay = 20;
+		public boolean autoflag = false;
+	}
+
+	 class AutoThread implements Runnable {
+
+	   SheepdogUI s;
+	   SimGlobals SimGlobals;
+	   public AutoThread(SheepdogUI obj, SimGlobals SimGlobals) {
+			s = obj;
+			this.SimGlobals = SimGlobals;
+	   }
+
+	   public void run() {
+			while(SimGlobals.autoflag) {
+				if (!s.performOnce())
+					break;
+				s.repaint();
+				try	{
+					Thread.sleep(SimGlobals.autodelay);
+				} catch(InterruptedException e) { }
+			}
+		}
+	}
+
     static String ROOT_DIR = "sheepdog";
 
     // recompile .class file?
-    static boolean recompile = true;
-    
+    static boolean recompile = false;
+
     // print more details?
-    static boolean verbose = false;
+    static boolean verbose = true;
 
     // Step by step trace
     static boolean trace = true;
@@ -54,7 +80,7 @@ public class Sheepdog
     static double OPEN_RIGHT = 51.0; // right side of center opening
 
     static int MAX_TICKS = 10000;
-    
+
 	// list files below a certain directory
 	// can filter those having a specific extension constraint
     //
@@ -172,7 +198,6 @@ public class Sheepdog
             });
     }
 
-
     class SheepdogUI extends JPanel implements ActionListener {
         int FRAME_SIZE = 800;
         int FIELD_SIZE = 600;
@@ -181,11 +206,14 @@ public class Sheepdog
         JButton next;
         JButton next10;
         JButton next50;
+        JButton auto;
         JLabel label;
+		SimGlobals SimGlobals;
 
         public SheepdogUI() {
             setPreferredSize(new Dimension(FRAME_SIZE, FRAME_SIZE));
             setOpaque(false);
+			SimGlobals = new SimGlobals();
         }
 
         public void init() {}
@@ -222,14 +250,35 @@ public class Sheepdog
                 steps = 10;
             else if (e.getSource() == next50)
                 steps = 50;
+				
+            if(e.getSource() != auto)
+            {
+				SimGlobals.autoflag = false;
+				try
+				{
+					Thread.sleep(50);
+				} catch(InterruptedException ex) { }
+				for (int i = 0; i < steps; ++i) {
+					if (!performOnce())
+						break;
+				}
+            	repaint();
+			}
+			else
+			{
+				if(SimGlobals.autoflag)
+					SimGlobals.autoflag = false;
+				else
+				{
+					SimGlobals.autoflag = true;
+					Runnable r = new AutoThread(this, SimGlobals);
+					new Thread(r).start();
+				}
+			}
 
-            for (int i = 0; i < steps; ++i) {
-                if (!performOnce())
-                    break;
-            }
 
-            repaint();
         }
+
 
 
         public void createAndShowGUI()
@@ -238,15 +287,18 @@ public class Sheepdog
 
             f = new JFrame("Sheepdog");
             field = new FieldPanel(1.0 * FIELD_SIZE / dimension);
-            next = new JButton("Next"); 
+            next = new JButton("Next");
             next.addActionListener(this);
             next.setBounds(0, 0, 100, 50);
-            next10 = new JButton("Next10"); 
+            next10 = new JButton("Next10");
             next10.addActionListener(this);
             next10.setBounds(100, 0, 100, 50);
-            next50 = new JButton("Next50"); 
+            next50 = new JButton("Next50");
             next50.addActionListener(this);
             next50.setBounds(200, 0, 100, 50);
+            auto = new JButton("Auto");
+			auto.addActionListener(this);
+            auto.setBounds(300, 0, 100, 50);
 
             label = new JLabel();
             label.setVisible(false);
@@ -258,6 +310,7 @@ public class Sheepdog
             this.add(next);
             this.add(next10);
             this.add(next50);
+            this.add(auto);
             this.add(label);
             this.add(field);
 
@@ -310,7 +363,7 @@ public class Sheepdog
             // sheeps
             drawSheeps(g2);
         }
-        
+
         public void drawPoint(Graphics2D g2, Point p, PType type) {
             if (type == PType.PTYPE_DOG)
                 g2.setPaint(Color.BLUE);
@@ -355,7 +408,7 @@ public class Sheepdog
         }
         return dogs[mindog];
     }
-    
+
     Point moveSheep(int sheepId) {
         Point thisSheep = sheeps[sheepId];
         double dspeed = 0;
@@ -367,7 +420,7 @@ public class Sheepdog
             dspeed = RUN_SPEED;
         else if (dist < WALK_DIST)
             dspeed = WALK_SPEED;
-        
+
         // offset from dogs
         double ox_dog = (thisSheep.x - closestDog.x) / dist * dspeed;
         double oy_dog = (thisSheep.y - closestDog.y) / dist * dspeed;
@@ -397,16 +450,15 @@ public class Sheepdog
         }
 
         double ox = ox_dog + ox_cluster, oy = oy_dog + oy_cluster;
-        
+
         Point npos = updatePosition(thisSheep, ox, oy);
 
         if (verbose) {
             if (!npos.equals(thisSheep)) {
-                System.err.format("Sheep %d moves from (%.2f,%.2f) to (%.2f,%.2f): %.2f\n", 
-                                  sheepId, thisSheep.x, thisSheep.y, npos.x, npos.y, distance(thisSheep, npos));
+                //System.err.format("Sheep %d moves from (%.2f,%.2f) to (%.2f,%.2f): %.2f\n", sheepId, thisSheep.x, thisSheep.y, npos.x, npos.y, distance(thisSheep, npos));
             }
             else {
-                System.err.format("Sheep %d stays at (%.2f,%.2f)\n", sheepId, thisSheep.x, thisSheep.y);
+                //System.err.format("Sheep %d stays at (%.2f,%.2f)\n", sheepId, thisSheep.x, thisSheep.y);
             }
         }
         return npos;
@@ -417,7 +469,7 @@ public class Sheepdog
     Point updatePosition(Point now, double ox, double oy) {
         double nx = now.x + ox, ny = now.y + oy;
 
-        // hit the left fence        
+        // hit the left fence
         if (nx < 0) {
             //            System.err.println("SHEEP HITS THE LEFT FENCE!!!");
 
@@ -427,7 +479,7 @@ public class Sheepdog
             double moved = 0 - now.x;
             // how much we still need to move
             // BUT in opposite direction
-            double ox2 = -(ox - moved); 
+            double ox2 = -(ox - moved);
             return updatePosition(temp, ox2, oy);
         }
         // hit the right fence
@@ -462,7 +514,7 @@ public class Sheepdog
 
         assert nx >= 0 && nx <= dimension;
         assert ny >= 0 && ny <= dimension;
-        
+
         // hit the middle fence
         if (hitTheFence(now.x, now.y, nx, ny)) {
             //            System.err.println("SHEEP HITS THE CENTER FENCE!!!");
@@ -505,7 +557,7 @@ public class Sheepdog
         // one point is on the fence
         if (getSide(x1,y1) == 2 || getSide(x2,y2) == 2)
             return false;
-        
+
         // compute the intersection with (50, y3)
         // (y3-y1)/(50-x1) = (y2-y1)/(x2-x1)
 
@@ -532,8 +584,6 @@ public class Sheepdog
 
 
     boolean validateMove(Point src, Point dst) {
-        if (Double.isNaN(dst.x) || Double.isNaN(dst.y))
-            return false;
         if (dst.x < 0 || dst.x > dimension)
             return false;
         if (dst.y < 0 || dst.y > dimension)
@@ -562,7 +612,7 @@ public class Sheepdog
                 if (getSide(sheeps[i]) == 1)
                     return false;
             }
-            // all white are in lower side 
+            // all white are in lower side
             for (int i = nblacks; i < nsheeps; ++i) {
                 if (getSide(sheeps[i]) == 0)
                     return false;
@@ -582,7 +632,7 @@ public class Sheepdog
 
 
     void playStep() {
-        tick++;        
+        tick++;
 
         // move the player dogs
         Point[] next = new Point[ndogs];
@@ -598,8 +648,7 @@ public class Sheepdog
             }
 
             if (verbose) {
-                System.err.format("Dog %d moves from (%.2f,%.2f) to (%.2f,%.2f)\n", 
-                                  d+1, dogs[d].x, dogs[d].y, next[d].x, next[d].y);
+                //System.err.format("Dog %d moves from (%.2f,%.2f) to (%.2f,%.2f)\n", d+1, dogs[d].x, dogs[d].y, next[d].x, next[d].y);
             }
 
             // validate player move
@@ -610,7 +659,7 @@ public class Sheepdog
                 next[d] = dogs[d];
             }
         }
-            
+
         // move sheeps
         moveSheeps();
 
@@ -623,7 +672,7 @@ public class Sheepdog
             if (endOfGame()) break;
             playStep();
         }
-        
+
         if (tick > MAX_TICKS) {
             // Time out
             System.err.println("[ERROR] The player is time out!");
@@ -639,7 +688,7 @@ public class Sheepdog
         sheeps = new Point[nsheeps];
         for (int s = 0; s < nsheeps; ++s)
             sheeps[s] = randomPosition(1);
-        
+
         // initialize dogs
         dogs = new Point[ndogs];
         for (int d = 1; d <= ndogs; ++d) {
@@ -671,7 +720,7 @@ public class Sheepdog
         System.err.println("##### end of config #####");
     }
 
-    
+
 	public static void main(String[] args) throws Exception
 	{
         // game parameters
@@ -696,7 +745,7 @@ public class Sheepdog
 
         // load players
         Player[] players = loadPlayers(group, ndogs);
-        
+
         // create game
         Sheepdog game = new Sheepdog(players, nsheeps, nblacks, mode);
         // init game
@@ -709,7 +758,7 @@ public class Sheepdog
             game.play();
         }
 
-    }        
+    }
 
     // players
     Player[] players;
@@ -717,7 +766,7 @@ public class Sheepdog
     Point[] dogs;
     // sheep positions
     Point[] sheeps;
-    
+
     // game config
     int ndogs;
     int nsheeps;
@@ -729,3 +778,6 @@ public class Sheepdog
     static double dimension = 100.0; // dimension of the map
     static Random random = new Random();
 }
+
+
+
