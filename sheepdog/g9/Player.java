@@ -4,10 +4,12 @@ import java.util.LinkedList;
 
 public class Player extends sheepdog.sim.Player {
     private LinkedList<Strategy> strategyStack;
+    private boolean strategyInit;
 
     public void init(int nblacks, boolean mode) {
         Global.nblacks = nblacks;
         Global.mode = mode;
+        strategyInit = false;
         strategyStack = new LinkedList<Strategy>();
     }
 
@@ -26,9 +28,16 @@ public class Player extends sheepdog.sim.Player {
             sheeps[i] = new Point(posSheeps[i]);
         }
 
-        // condition to use strategy should be put here
+        if (!strategyInit) {
+            // condition to use strategy should be put here
+            if (dogs.length > 5) {
+                Sweep sweep = new Sweep (id, strategyStack);
+                //strategyStack.push(sweep);
+            }
+            strategyInit = true;
+        }
+
         if(strategyStack.isEmpty()) {
-            System.out.println("new fetch");
             double x = PlayerUtils.GATE.x;
             double y = PlayerUtils.GATEOPENLEFT +
                 (PlayerUtils.GATEOPENRIGHT - PlayerUtils.GATEOPENLEFT) *

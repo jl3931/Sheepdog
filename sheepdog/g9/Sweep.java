@@ -3,28 +3,26 @@ package sheepdog.g9;
 import java.util.*;
 
 public class Sweep extends Strategy {
-    public enum SweepStage { MOVE_TO_GATE, LINEUP_ON_FENCE, RECIPROCATE, SHRINK }
+    public enum SweepStage { MOVE_TO_GATE, LINEUP, PUSH, SQUEEZE, BACK_TO_GATE}
     public enum DogRole { UP, DOWN, RIGHT }
-    public enum DogDir { CLOCKWISE, COUNTER_CLOCKWISE }
-    private final double DOG_RECIPROCATE_SPEED = 6;
-    private final double CLEAR_GAP = 7;
+    public enum DogDir { LEFT, RIGHT }
+    private final double DOG_PUSH_SPEED = 10;
+    private final double DOG_SQUEEZE_SPPED = 10;
+    private final double PUSH_GAP = 0.5;
+    private final double SQUEEZE_GAP = 1;
+    private final double BACK_TO_GATE_GAP = 7;
 
     public String name = "Sweep";
 
-    private DogDir dogdir;
     private DogRole role;
+    private DogDir dir;
     SweepStage stage;
     private Point ret;
-
-    private double width;
-    private double height;
 
     public Sweep (int id, LinkedList<Strategy> strategyStack) {
         super(id, strategyStack);
         stage = SweepStage.MOVE_TO_GATE;
-        width = PlayerUtils.WIDTH;
-        height = PlayerUtils.HEIGHT;
-        dogdir = DogDir.CLOCKWISE;
+        dir = DogDir.LEFT;
     }
 
     // Deterministic Finite Automata for current dog
@@ -34,55 +32,124 @@ public class Sweep extends Strategy {
         switch (stage) {
             case MOVE_TO_GATE:
 
-                boolean all_in_gate = true;
-
-                for (Point p : dogs) 
-                    if (p.x < PlayerUtils.GATE.x) {
-                        all_in_gate = false;
-                        break;
-                    }
-
-                if (all_in_gate) {
-                    stage = SweepStage.LINEUP_ON_FENCE;
+                if (me.x >= PlayerUtils.GATE.x) {
+                    stage = SweepStage.LINEUP;
                     move(dogs, sheeps);
                 }
 
-                ret = PlayerUtils.moveDogToWithSpeed(me, PlayerUtils.GATE, DOG_RECIPROCATE_SPEED );
+                ret = PlayerUtils.moveDogTo(me, PlayerUtils.GATE);
 
                 return ret;
 
-            case LINEUP_ON_FENCE:
+            case LINEUP:
                 boolean all_lineup = true;
 
                 if (all_lineup(dogs)) {
-                    stage = SweepStage.RECIPROCATE;
+                    stage = SweepStage.PUSH;
                     move(dogs, sheeps);
                 }
+
                 Point targetPos = dog_lineup_pos(id, dogs);
                 if (targetPos.equals(me)) {
                     ret = me;
                     return ret;
                 }
 
-                ret = PlayerUtils.moveDogToWithSpeed( me, targetPos, DOG_RECIPROCATE_SPEED );
+                ret = PlayerUtils.moveDogTo( me, targetPos );
 
                 return ret;
 
-            case RECIPROCATE:
-                if ( need_2_shrink(dogs, sheeps) ) {
-                    System.out.println("SHRINK\n");
-
-                    //TODO update width and height
-                    width -= 4;
-                    height -= 8;
-
-                    stage = SweepStage.LINEUP_ON_FENCE;
+            case PUSH:
+                if (need_to_squeeze(dogs, sheeps) ) {
+                    System.out.println("start to squeeze\n");
+                    stage = SweepStage.SQUEEZE;
                     move(dogs, sheeps);
                 }
 
-                ret = PlayerUtils.moveDogToWithSpeed( me, reciprocate_next_dog_pos(dogs, sheeps), DOG_RECIPROCATE_SPEED );
+                double interval = PlayerUtils.HEIGHT / (double)(dogs.length - 2);
+                Point rightmost = new Point(PlayerUtils.WIDTH, 0);
+                Point sublm = new Point(PlayerUtils.WIDTH, (id-1) * interval);
+
+                for (int i=0; i<sheeps.length; ++i) {
+                    Point t = PlayerUtils.PredictNextMove(i, dogs, sheeps);
+                    if (t.x > rightmost.x) {
+                        rightmost.x = t.x;
+                        rightmost.y = t.y;
+                    }
+                    if ((id-1) * interval <= t.y && t.y <= id * interval && t.x > sublm.x) {
+                        sublm.x = t.x;
+                        sublm.y = t.y;
+                    }
+                }
+
+                targetPos = new Point();
+                
+                if (id == dogs.length-1) {
+                    targetPos.x = Math.min(PlayerUtils.WIDTH*2, rightmost.x + PUSH_GAP);
+                    targetPos.y = 0;
+                } else if (id == dogs.length) {
+                    targetPos.x = Math.min(PlayerUtils.WIDTH*2, rightmost.x + PUSH_GAP);
+                    targetPos.y = PlayerUtils.HEIGHT;
+                } else {
+                    targetPos.x = Math.min(PlayerUtils.WIDTH*2, rightmost.x + PUSH_GAP);
+                    targetPos.y = sublm.y;
+                }
+                ret = PlayerUtils.moveDogTo( me, targetPos );
 
                 return ret;
+
+            case SQUEEZE:
+                double down_y = 0;
+                double up_y = PlayerUtils.HEIGHT;
+                rightmost = new Point(PlayerUtils.WIDTH, 0);
+
+                interval = PlayerUtils.HEIGHT / (double)(dogs.length - 2);
+                sublm = new Point(PlayerUtils.WIDTH, (id-1) * interval);
+
+                for (int i=0; i<sheeps.length; ++i) {
+                    Point t = PlayerUtils.PredictNextMove(i, dogs, sheeps);
+                    up_y = Math.min(up_y, t.y);
+                    down_y = Math.max(down_y, t.y);
+
+                    if (t.x > rightmost.x) {
+                        rightmost.x = t.x;
+                        rightmost.y = t.y;
+                    }
+                    if ((id-1) * interval <= t.y && t.y <= id * interval && t.x > sublm.x) {
+                        sublm.x = t.x;
+                        sublm.y = t.y;
+                    }
+                }
+
+                if (id==dogs.length || id==dogs.length-1) {
+                    targetPos = defender_move(up_y, down_y, dogs, sheeps);
+                    //System.out.println("up_y = " + up_y + ", down_y = " + down_y);
+                    //System.out.println("targetPos = " + targetPos.toString());
+                } else {
+                    ret = me;
+                    targetPos = new Point();
+                    targetPos.x = rightmost.x + SQUEEZE_GAP * 2;
+
+                    if (id * interval < up_y) {
+                        targetPos.y = Math.max(me.y, up_y - SQUEEZE_GAP);
+                    } else if ((id-1) * interval > down_y) {
+                        targetPos.y = Math.min(me.y, down_y + SQUEEZE_GAP);
+                    } else {
+                        targetPos.y = sublm.y;
+                        if (id == 1) 
+                            targetPos.y = Math.max(0, targetPos.y - SQUEEZE_GAP);
+                        if (id == dogs.length-2) 
+                            targetPos.y = Math.min(PlayerUtils.HEIGHT, targetPos.y + SQUEEZE_GAP);
+                    }
+                }
+                ret = PlayerUtils.moveDogTo( me, targetPos );
+
+                return ret;
+            /*
+            case BACK_TO_GATE:
+
+                return ret;
+                */
         }
         return new Point();
     }
@@ -106,89 +173,58 @@ public class Sweep extends Strategy {
         return true;
     }
 
-    // return dog's lineup position
-    private Point dog_lineup_pos( int id, Point[] dogs ) {
+    private Point defender_move(double up_y, double down_y, Point[] dogs, Point[] sheeps) {
         Point me = dogs[id-1];
-        int up_dogs = dogs.length / 4;
-        int down_dogs = up_dogs + dogs.length / 4;
+        Point targetPos = new Point();
+        double rightbound = dogs[1].x;
 
-        if (dogs.length == 3) {
-            up_dogs = 1;
-            down_dogs = 2;
+        if (Math.abs(50.0 - me.x) <= 0.1) {
+            dir = DogDir.RIGHT;
+        } else if (Math.abs(rightbound - me.x) <= 0.1) {
+            dir = DogDir.LEFT;
         }
 
-        Point ret = new Point();
-
-        double small_dist = (PlayerUtils.HEIGHT - height) / 2;
-
-        if (id <= up_dogs) { // up dogs
-            ret.y = small_dist;
-            ret.x = PlayerUtils.WIDTH + (id-1) * (width / up_dogs);
-            role = DogRole.UP;
-
-        } else if (id <= down_dogs) { // down dogs
-            ret.y = PlayerUtils.HEIGHT - small_dist;
-            ret.x = PlayerUtils.WIDTH + (id-1 - up_dogs + 1) * (width / (down_dogs - up_dogs));
-            role = DogRole.DOWN;
-
-        } else { // right dogs
-            ret.x = PlayerUtils.WIDTH + width;
-            ret.y = small_dist + (id-1 - down_dogs) * height / (dogs.length - down_dogs);
-            role = DogRole.RIGHT;
+        if ( dir == DogDir.LEFT ) {
+            targetPos.x = 50;
+        } else if (dir == DogDir.RIGHT ) {
+            targetPos.x = rightbound;
         }
 
-        return ret;
+        if (id == dogs.length-1) { // up right
+            targetPos.y = Math.max(me.y, up_y - SQUEEZE_GAP);
+            targetPos.y = Math.min(targetPos.y, PlayerUtils.HEIGHT / 2.0 );
+        } else if (id == dogs.length) { // down right
+            targetPos.y = Math.min(me.y, down_y + SQUEEZE_GAP);
+            targetPos.y = Math.max(targetPos.y, PlayerUtils.HEIGHT / 2.0 );
+
+        } /* else if (id == 1) { // up left
+            targetPos.x = (Math.abs(97.0 - me.x) <= 0.1) ? :96.0;
+
+            } else { // down left
+            targetPos.x = (Math.abs(97.0 - me.x) <= 0.1) ? :96.0;
+
+            }
+          */
+
+        return targetPos;
+    }
+    
+    private Point dog_lineup_pos( int id, Point[] dogs ) {
+        if (id == dogs.length || id == dogs.length-1) {
+            Point q = new Point(PlayerUtils.WIDTH*2, PlayerUtils.GATE.y);
+            return q;
+        }
+        
+        Point p = new Point(PlayerUtils.WIDTH*2, (id-1) * PlayerUtils.HEIGHT / (double)(dogs.length-2));
+        return p;
     }
 
-    // shrink there's no sheep within the "gap"
-    private boolean need_2_shrink( Point[] dogs, Point[] sheeps ) {
-        double small_dist = (PlayerUtils.HEIGHT - height) / 2;
-
-        for (int i=0; i<sheeps.length; ++i)
-            if (sheeps[i].x > PlayerUtils.WIDTH + width - CLEAR_GAP || 
-                    sheeps[i].y < small_dist + CLEAR_GAP ||
-                    sheeps[i].y > PlayerUtils.HEIGHT - small_dist - CLEAR_GAP)
+    private boolean need_to_squeeze(Point[] dogs, Point[] sheeps) {
+        for (int i=0; i<dogs.length; ++i)
+            if (dogs[i].x > 56)
                 return false;
 
         return true;
-    }
-
-    private Point reciprocate_next_dog_pos( Point[] dogs, Point[] sheeps ) {
-        Point a = dog_lineup_pos(id, dogs);
-        Point me = dogs[id-1];
-
-        if (DogDir.COUNTER_CLOCKWISE == dogdir) {
-            if (a.equals(me)) {
-                dogdir = DogDir.CLOCKWISE;
-                reciprocate_next_dog_pos(dogs, sheeps);
-            } else 
-                return a;
-        }
-
-        Point b = new Point();
-
-        switch (role) {
-            case UP:
-                b.x = a.x + width / (dogs.length / 4);
-                b.y = a.y;
-                break;
-            case DOWN:
-                b.x = a.x - width / (dogs.length / 4);
-                b.y = a.y;
-                break;
-            case RIGHT:
-                b.x = a.x;
-                b.y = a.y + height / (dogs.length - dogs.length / 4 - dogs.length / 4);
-                break;
-            default: break;
-        }
-
-        if (b.equals(me)) {
-            dogdir = DogDir.COUNTER_CLOCKWISE;
-            reciprocate_next_dog_pos(dogs, sheeps);
-        }
-
-        return b;
     }
 
     public String toString() {
