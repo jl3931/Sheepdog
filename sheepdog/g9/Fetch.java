@@ -28,6 +28,16 @@ public class Fetch extends Strategy {
         targetDogPoint = PlayerUtils.GATE;
     }
 
+    public static double estimate(Point[] dogs, Point[] sheeps) {
+        int ndogs = dogs.length;
+        double accuTime = 0;
+        int maxIter = Global.mode ? Global.nblacks : sheeps.length;
+        for (int i = 0; i < maxIter; i++) {
+            accuTime += (sheeps[i].distance(PlayerUtils.GATE))* (1/1.0 + 1/2.0);
+        }
+        return accuTime/ndogs * 1.2;
+    }
+
     public Point move(Point[] dogs, Point[] sheeps) {
         Point current = dogs[id-1];
         boolean end = false;

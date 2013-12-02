@@ -25,6 +25,10 @@ public class Sweep extends Strategy {
         dir = DogDir.LEFT;
     }
 
+    public static double estimate(Point[] dogs, Point[] sheeps) {
+        return 10000.0/(dogs.length);
+    }
+
     // Deterministic Finite Automata for current dog
     public Point move(Point[] dogs, Point[] sheeps) {
         Point me = dogs[id-1];
@@ -143,7 +147,8 @@ public class Sweep extends Strategy {
                     }
                 }
                 ret = PlayerUtils.moveDogTo( me, targetPos );
-
+                if (done(sheeps))
+                    strategyStack.pop();
                 return ret;
             /*
             case BACK_TO_GATE:
@@ -152,6 +157,14 @@ public class Sweep extends Strategy {
                 */
         }
         return new Point();
+    }
+
+    private boolean done(Point[] sheeps) {
+        for (int i = 0; i < sheeps.length; i++) {
+            if (sheeps[i].x > PlayerUtils.GATE.x)
+                return false;
+        }
+        return true;
     }
 
     private boolean all_lineup( Point[] dogs ) {

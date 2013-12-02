@@ -30,9 +30,21 @@ public class Player extends sheepdog.sim.Player {
 
         if (!strategyInit) {
             // condition to use strategy should be put here
-            if (dogs.length > 5 && !Global.mode) {
-                Sweep sweep = new Sweep (id, strategyStack);
-                strategyStack.push(sweep);
+            double fetchEst = Fetch.estimate(dogs, sheeps);
+            double sweepEst = Sweep.estimate(dogs, sheeps);
+            System.out.println(fetchEst + " " + sweepEst);
+            if (Global.mode) {
+                double inverseFetchEst = fetchEst / Global.nblacks * (sheeps.length - Global.nblacks);
+                if (fetchEst > sweepEst + inverseFetchEst) {
+                    Sweep sweep = new Sweep (id, strategyStack);
+                    strategyStack.push(sweep);
+                }
+            }
+            else {
+                if (fetchEst > sweepEst) {
+                    Sweep sweep = new Sweep (id, strategyStack);
+                    strategyStack.push(sweep);
+                }
             }
             strategyInit = true;
         }
