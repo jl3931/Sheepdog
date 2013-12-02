@@ -225,7 +225,7 @@ public class PlayerUtils {
         
         // hit the left fence        
         if (nx < 0) {
-            //System.err.println("SHEEP HITS THE LEFT FENCE!!!");
+            // System.err.println("SHEEP HITS THE LEFT FENCE!!!");
 
             // move the point to the left fence
             Point temp = new Point(0, now.y);
@@ -238,7 +238,7 @@ public class PlayerUtils {
         }
         // hit the right fence
         if (nx > DIMENSION) {
-            //System.err.println("SHEEP HITS THE RIGHT FENCE!!!");
+            // System.err.println("SHEEP HITS THE RIGHT FENCE!!!");
 
             // move the point to the right fence
             Point temp = new Point(DIMENSION, now.y);
@@ -248,7 +248,7 @@ public class PlayerUtils {
         }
         // hit the up fence
         if (ny < 0) {
-            //System.err.println("SHEEP HITS THE UP FENCE!!!");
+            // System.err.println("SHEEP HITS THE UP FENCE!!!");
 
             // move the point to the up fence
             Point temp = new Point(now.x, 0);
@@ -258,7 +258,7 @@ public class PlayerUtils {
         }
         // hit the bottom fence
         if (ny > DIMENSION) {
-            //System.err.println("SHEEP HITS THE BOTTOM FENCE!!!");
+            // System.err.println("SHEEP HITS THE BOTTOM FENCE!!!");
 
             Point temp = new Point(now.x, DIMENSION);
             double moved = (DIMENSION - now.y);
@@ -271,7 +271,7 @@ public class PlayerUtils {
         
         // hit the middle fence
         if (hitTheFence(now.x, now.y, nx, ny)) {
-            //System.err.println("SHEEP HITS THE CENTER FENCE!!!");
+            // System.err.println("SHEEP HITS THE CENTER FENCE!!!");
             //            System.err.println(nx + " " + ny);
             //            System.err.println(ox + " " + oy);
 
