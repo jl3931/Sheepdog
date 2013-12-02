@@ -3,7 +3,7 @@ package sheepdog.g9;
 import java.util.*;
 
 public class Sweep extends Strategy {
-    public enum SweepStage { MOVE_TO_GATE, LINEUP, PUSH, SQUEEZE, BACK_TO_GATE}
+    public enum SweepStage { MOVE_TO_GATE, LINEUP, PUSH, SQUEEZE, BACK_TO_GATE }
     public enum DogRole { UP, DOWN, RIGHT }
     public enum DogDir { LEFT, RIGHT }
     private final double DOG_PUSH_SPEED = 10;
@@ -11,6 +11,7 @@ public class Sweep extends Strategy {
     private final double PUSH_GAP = 0.5;
     private final double SQUEEZE_GAP = 1;
     private final double BACK_TO_GATE_GAP = 7;
+    private final double OVERLAP = 0.5;
 
     public String name = "Sweep";
 
@@ -25,12 +26,21 @@ public class Sweep extends Strategy {
         dir = DogDir.LEFT;
     }
 
-    public static double estimate(Point[] dogs, Point[] sheeps) {
-        return 10000.0/(dogs.length);
-    }
-
     // Deterministic Finite Automata for current dog
-    public Point move(Point[] dogs, Point[] sheeps) {
+    public Point move(Point[] dogs, Point[] allsheeps) {
+        Point[] sheeps;
+
+        if (Global.mode) {
+            sheeps = new Point[Global.nblacks];
+            for (int i=0; i<Global.nblacks; ++i) {
+                sheeps[i] = new Point();
+                sheeps[i].x = allsheeps[i].x;
+                sheeps[i].y = allsheeps[i].y;
+            }
+        } else {
+            sheeps = allsheeps;
+        }
+
         Point me = dogs[id-1];
 
         switch (stage) {
@@ -65,7 +75,7 @@ public class Sweep extends Strategy {
 
             case PUSH:
                 if (need_to_squeeze(dogs, sheeps) ) {
-                    System.out.println("start to squeeze\n");
+                    //System.out.println("start to squeeze\n");
                     stage = SweepStage.SQUEEZE;
                     move(dogs, sheeps);
                 }
@@ -73,6 +83,8 @@ public class Sweep extends Strategy {
                 double interval = PlayerUtils.HEIGHT / (double)(dogs.length - 2);
                 Point rightmost = new Point(PlayerUtils.WIDTH, 0);
                 Point sublm = new Point(PlayerUtils.WIDTH, (id-1) * interval);
+                double upbound = Math.max(0, (id-1) * interval - OVERLAP * interval);
+                double downbound = Math.min(PlayerUtils.HEIGHT, id * interval + OVERLAP * interval);
 
                 for (int i=0; i<sheeps.length; ++i) {
                     Point t = PlayerUtils.PredictNextMove(i, dogs, sheeps);
@@ -80,7 +92,7 @@ public class Sweep extends Strategy {
                         rightmost.x = t.x;
                         rightmost.y = t.y;
                     }
-                    if ((id-1) * interval <= t.y && t.y <= id * interval && t.x > sublm.x) {
+                    if ( upbound <= t.y && t.y <= downbound && t.x > sublm.x) {
                         sublm.x = t.x;
                         sublm.y = t.y;
                     }
@@ -109,8 +121,11 @@ public class Sweep extends Strategy {
 
                 interval = PlayerUtils.HEIGHT / (double)(dogs.length - 2);
                 sublm = new Point(PlayerUtils.WIDTH, (id-1) * interval);
+                upbound = Math.max(0, (id-1) * interval - OVERLAP * interval);
+                downbound = Math.min(PlayerUtils.HEIGHT, id * interval + OVERLAP * interval);
 
                 for (int i=0; i<sheeps.length; ++i) {
+                    if (sheeps[i].x < PlayerUtils.GATE.x) continue;
                     Point t = PlayerUtils.PredictNextMove(i, dogs, sheeps);
                     up_y = Math.min(up_y, t.y);
                     down_y = Math.max(down_y, t.y);
@@ -119,7 +134,7 @@ public class Sweep extends Strategy {
                         rightmost.x = t.x;
                         rightmost.y = t.y;
                     }
-                    if ((id-1) * interval <= t.y && t.y <= id * interval && t.x > sublm.x) {
+                    if (upbound <= t.y && t.y <= downbound && t.x > sublm.x) {
                         sublm.x = t.x;
                         sublm.y = t.y;
                     }
@@ -134,9 +149,9 @@ public class Sweep extends Strategy {
                     targetPos = new Point();
                     targetPos.x = rightmost.x + SQUEEZE_GAP * 2;
 
-                    if (id * interval < up_y) {
+                    if (downbound < up_y) {
                         targetPos.y = Math.max(me.y, up_y - SQUEEZE_GAP);
-                    } else if ((id-1) * interval > down_y) {
+                    } else if (upbound > down_y) {
                         targetPos.y = Math.min(me.y, down_y + SQUEEZE_GAP);
                     } else {
                         targetPos.y = sublm.y;
@@ -145,10 +160,11 @@ public class Sweep extends Strategy {
                         if (id == dogs.length-2) 
                             targetPos.y = Math.min(PlayerUtils.HEIGHT, targetPos.y + SQUEEZE_GAP);
                     }
+                    if (Math.abs(me.y - 50.0) <= 2)
+                        targetPos.y -= 0.9 * SQUEEZE_GAP;
                 }
                 ret = PlayerUtils.moveDogTo( me, targetPos );
-                if (done(sheeps))
-                    strategyStack.pop();
+
                 return ret;
             /*
             case BACK_TO_GATE:
@@ -157,14 +173,6 @@ public class Sweep extends Strategy {
                 */
         }
         return new Point();
-    }
-
-    private boolean done(Point[] sheeps) {
-        for (int i = 0; i < sheeps.length; i++) {
-            if (sheeps[i].x > PlayerUtils.GATE.x)
-                return false;
-        }
-        return true;
     }
 
     private boolean all_lineup( Point[] dogs ) {
@@ -190,25 +198,33 @@ public class Sweep extends Strategy {
         Point me = dogs[id-1];
         Point targetPos = new Point();
         double rightbound = dogs[1].x;
+        double leftbound = 50.0;
 
-        if (Math.abs(50.0 - me.x) <= 0.1) {
-            dir = DogDir.RIGHT;
-        } else if (Math.abs(rightbound - me.x) <= 0.1) {
-            dir = DogDir.LEFT;
-        }
+        if (Math.abs(me.y - 50.0) <= 4) {
+            targetPos.x = (rightbound-50.0) * 0.8 + 50.0;
+        } else {
 
-        if ( dir == DogDir.LEFT ) {
-            targetPos.x = 50;
-        } else if (dir == DogDir.RIGHT ) {
-            targetPos.x = rightbound;
+            if (Math.abs(leftbound - me.x) <= 0.1) {
+                dir = DogDir.RIGHT;
+            } else if (Math.abs(rightbound - me.x) <= 0.1) {
+                dir = DogDir.LEFT;
+            }
+
+            if ( dir == DogDir.LEFT ) {
+                targetPos.x = leftbound;
+            } else if (dir == DogDir.RIGHT ) {
+                targetPos.x = rightbound;
+            }
         }
 
         if (id == dogs.length-1) { // up right
-            targetPos.y = Math.max(me.y, up_y - SQUEEZE_GAP);
-            targetPos.y = Math.min(targetPos.y, PlayerUtils.HEIGHT / 2.0 );
+            //targetPos.y = Math.max(me.y, up_y - SQUEEZE_GAP);
+            targetPos.y = Math.max(0, up_y - SQUEEZE_GAP);
+            targetPos.y = Math.min(targetPos.y, PlayerUtils.HEIGHT / 2.0 - 1 );
         } else if (id == dogs.length) { // down right
-            targetPos.y = Math.min(me.y, down_y + SQUEEZE_GAP);
-            targetPos.y = Math.max(targetPos.y, PlayerUtils.HEIGHT / 2.0 );
+            //targetPos.y = Math.min(me.y, down_y + SQUEEZE_GAP);
+            targetPos.y = Math.min(PlayerUtils.HEIGHT, down_y + SQUEEZE_GAP);
+            targetPos.y = Math.max(targetPos.y, PlayerUtils.HEIGHT / 2.0 + 1 );
 
         } /* else if (id == 1) { // up left
             targetPos.x = (Math.abs(97.0 - me.x) <= 0.1) ? :96.0;
@@ -244,3 +260,4 @@ public class Sweep extends Strategy {
         return String.format("%s\t%s\t dog  %d move to (%s)", name, stage.toString(), id, ret.toString());
     }
 }
+
