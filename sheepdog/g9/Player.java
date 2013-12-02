@@ -30,9 +30,9 @@ public class Player extends sheepdog.sim.Player {
 
         if (!strategyInit) {
             // condition to use strategy should be put here
-            if (dogs.length > 5) {
+            if (dogs.length > 5 && !Global.mode) {
                 Sweep sweep = new Sweep (id, strategyStack);
-                //strategyStack.push(sweep);
+                strategyStack.push(sweep);
             }
             strategyInit = true;
         }
