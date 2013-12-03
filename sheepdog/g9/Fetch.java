@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 public class Fetch extends Strategy {
     public enum FetchStage { MOVETOGATE, MOVETOSHEEP, CHASEBACK, PUSHIN }
-    public static final Point DEFAULTIDLE = new Point(50.01, 0);
+    public static final Point DEFAULTIDLE = new Point(100, 50);
     public String name = "Fetch";
     private FetchStage stage;
     private int sheepId;
@@ -77,7 +77,7 @@ public class Fetch extends Strategy {
                 if (sheepId == -1)
                     for (int i = 0; i < (id - 1); i++) {
                         if (dogs[i].equals(PlayerUtils.GATE))
-                            return current;
+                            return PlayerUtils.moveDogTo(current, DEFAULTIDLE);
                     }
                 // double check for valid sheep target
                 if (sheepId >= 0) {

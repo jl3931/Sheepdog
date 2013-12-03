@@ -117,7 +117,7 @@ public class PlayerUtils {
         int maxIter = Global.mode ? Global.nblacks : sheeps.length;
         for (int i = 0; i < maxIter; i++) {
             if (sheeps[i].x > 50 && valid[i]) {
-                double d = distance(sheeps[i], GATE);
+                double d = distance(sheeps[i], dogs[id-1]);
                 if (d < mindist && d != 0) { // ignore overlapping dog
                     mindist = d;
                     minsheep = i;
