@@ -25,7 +25,7 @@ public class PointNode extends Point {
             for (int j = 0; j <= i; j++) {
                 if (minDistance >= pn.distance(nodes[j])) {
                     pn.parent = j;
-                    pn.treeDistance = pn.distance(nodes[j]) + pn.treeDistance;
+                    pn.treeDistance = pn.distance(nodes[j]) + nodes[j].treeDistance;
                     minDistance = pn.distance(nodes[j]);
                 }
             }
