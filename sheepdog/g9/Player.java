@@ -5,7 +5,6 @@ import java.util.LinkedList;
 public class Player extends sheepdog.sim.Player {
     private LinkedList<Strategy> strategyStack;
     private boolean strategyInit;
-
     public void init(int nblacks, boolean mode) {
         Global.nblacks = nblacks;
         Global.mode = mode;
@@ -36,7 +35,7 @@ public class Player extends sheepdog.sim.Player {
             System.out.println(fetchEst + " " + sweepEst + " " + treeEst);
 
             if (Global.mode) {
-                double inverseFetchEst = fetchEst / Global.nblacks * (sheeps.length - Global.nblacks);
+                double inverseFetchEst = fetchEst / Global.nblacks * (sheeps.length - Global.nblacks) / 5;
 
                 double fetchEst2 = fetchEst;
                 double sweepEst2 = sweepEst + inverseFetchEst;
@@ -71,7 +70,7 @@ public class Player extends sheepdog.sim.Player {
         }
 
         Point moveTo;
-        Strategy currentStrategy = strategyStack.getLast();
+        Strategy currentStrategy = strategyStack.getFirst();
         moveTo = currentStrategy.move(dogs, sheeps);
         System.out.println(currentStrategy.toString());
         return moveTo.toSimPoint();

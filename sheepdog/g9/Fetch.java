@@ -86,7 +86,7 @@ public class Fetch extends Strategy {
                             return PlayerUtils.moveDogTo(current, DEFAULTIDLE);
                     }
                 // double check for valid sheep target
-                if (sheepId >= 0) {
+                if ((sheepId >= 0) && (turnsLeft < 0)) {
                     boolean maybeInvalid = false;
                     for (int i = 0; i < dogs.length; i++) {
                         if (PlayerUtils.onTheLine(sheeps[sheepId], dogs[i], lastRoundDogs[i])) {
@@ -110,7 +110,7 @@ public class Fetch extends Strategy {
                     // no sheep to fetch - move out of busy zone
                     if (sheepId == -1)
                         return PlayerUtils.moveDogTo(current, DEFAULTIDLE);
-                    if (sheeps[sheepId].x < PlayerUtils.GATE.x) {
+                    if (sheeps[sheepId].x <= PlayerUtils.GATE.x) {
                         stage = FetchStage.MOVETOGATE;
                         workOnLeft = true;
                         return move(dogs, sheeps);
@@ -121,7 +121,7 @@ public class Fetch extends Strategy {
                     turnsLeft = 0;
                 targetSheepPoint =
                     PlayerUtils.PredictNextMove(sheepId, dogs, sheeps);
-                double distance = (turnsLeft<0)? PlayerUtils.SMALLDISTANCE: PlayerUtils.CLUSTERDISTANCE;
+                double distance = (turnsLeft<0)? PlayerUtils.SMALLDISTANCE: 0.01;
                 targetDogPoint =
                     PlayerUtils.getTargetDogPoint(targetSheepPoint, targetPoint, distance);
                 return PlayerUtils.moveDogTo(current, targetDogPoint);

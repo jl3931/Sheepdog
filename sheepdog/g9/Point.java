@@ -62,8 +62,8 @@ public class Point implements Comparable<Point> {
         return 0;
          */
 
-        double tan = (x - 50.0) / (y - 50.0);
-        double ptan = (p.x - 50.0) / (p.y - 50.0);
+        double tan = (y - 50.0) / (x - 50.0);
+        double ptan = (p.y - 50.0) / (p.x - 50.0);
 
         // sort in clockwise order, descending order
         if (tan - ptan > 0) return 1;

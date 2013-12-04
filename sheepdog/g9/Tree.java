@@ -19,7 +19,6 @@ public class Tree extends Strategy {
         int num_dogs = dogs.length;
 
         ArrayList<Point> buf = new ArrayList<Point>();
-
         if (Global.mode) {
             for (int i=0; i<Global.nblacks; ++i) {
                 if (allsheeps[i].x >= PlayerUtils.GATE.x) {
@@ -39,47 +38,53 @@ public class Tree extends Strategy {
         }
 
         Point[] sheeps = buf.toArray(new Point[buf.size()]);
-
-        Arrays.sort(sheeps);
-
         /*
-        System.out.println("--------------------------------");
-        for (int i=0; i<sheeps.length; ++i) {
-            System.out.println(sheeps[i].x + ", " + sheeps[i].y);
-        }
-        System.out.println("--------------------------------");
+          System.out.println("--------------------------------");
+          for (int i=0; i<sheeps.length; ++i) {
+          System.out.println(sheeps[i].x + ", " + sheeps[i].y + ", " + sheeps[i].sid);
+          }
+          System.out.println("--------------------------------");
         */
-
+        Arrays.sort(sheeps);
         sheeps = get_sheeps_inside_sector(num_dogs, sheeps);
-
         Arrays.sort(sheeps, Point.PointDistanceComparator);
+
         PointNode[] tree = PointNode.build(sheeps);
 
         int index_targetSheep = PointNode.get_farthest_sheep(tree);
         int _parent = tree[index_targetSheep].parent;
+
         if (-1 == _parent) { // root
-            return PlayerUtils.moveDogTo(me, Fetch.DEFAULTIDLE);
+            double x = PlayerUtils.GATE.x;
+            double y = PlayerUtils.GATEOPENLEFT +
+                (PlayerUtils.GATEOPENRIGHT - PlayerUtils.GATEOPENLEFT) *
+                ((double)id / (dogs.length + 1));
+            Fetch fetch = new Fetch(id, strategyStack, -1, new Point(x, y));
+            strategyStack.push(fetch);
+            return fetch.move(dogs, allsheeps);
         }
 
-        int sid_push_to_here = tree[_parent].sid;
         int sid_targetSheep = tree[index_targetSheep].sid;
 
-        if (done(allsheeps))
-            strategyStack.pop();
+        int fetchTurns = (int)java.lang.Math.round(me.distance(PlayerUtils.GATE)/10);
 
-        Fetch fetch = new Fetch(id, strategyStack, sid_targetSheep, allsheeps[sid_push_to_here]);
+        Fetch fetch = new Fetch(id, strategyStack, sid_targetSheep, tree[_parent], fetchTurns);
+        strategyStack.push(fetch);
         return fetch.move(dogs, allsheeps);
     }
 
     private Point[] get_sheeps_inside_sector(int num_dogs, Point[] sheeps) {
-        int partition = sheeps.length / num_dogs;
-
-        return Arrays.copyOfRange(sheeps, partition * (id-1), 
-                (id == num_dogs) ? sheeps.length : (partition * id -1) );
+        double partition = sheeps.length / num_dogs;
+        int lowerBound = (int)java.lang.Math.round(partition * (id-1));
+        int upperBound = (int)java.lang.Math.round(partition * id);
+        if (num_dogs == id)
+            upperBound = sheeps.length;
+        return Arrays.copyOfRange(sheeps, lowerBound, upperBound);
     }
 
     private boolean done(Point[] sheeps) {
-        for (int i = 0; i < sheeps.length; i++) {
+        int maxIter = Global.mode ? Global.nblacks : sheeps.length;
+        for (int i = 0; i < maxIter; i++) {
             if (sheeps[i].x > PlayerUtils.GATE.x)
                 return false;
         }

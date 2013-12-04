@@ -51,25 +51,15 @@ public class PlayerUtils {
                 x = 100;
             if (y > 100)
                 y = 100;
-            return new Point(x, y);
-        } 
-    }
+            if (x < 0)
+                x = 0;
+            if (y < 0)
+                y = 0;
+            if ((from.x > 50) && x < 50)
+                x = 50;
+            if ((from.x < 50) && x > 50)
+                x = 50;
 
-    // move dog from "from" to "to"
-    public static Point moveDogToWithSpeed(Point from, Point to, double dogspeed) {
-        double dx = to.x - from.x;
-        double dy = to.y - from.y;
-        double d = vectorLength(dx, dy);
-        if (d <= dogspeed * TIMEUNIT)
-            return to;
-        else {
-            double scale = (dogspeed * TIMEUNIT - SMALLDISTANCE)/ d;
-            double x = from.x + scale * dx;
-            double y = from.y + scale * dy;
-            if (x > 100)
-                x = 100;
-            if (y > 100)
-                y = 100;
             return new Point(x, y);
         } 
     }
