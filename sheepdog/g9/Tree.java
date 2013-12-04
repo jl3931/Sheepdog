@@ -2,19 +2,76 @@ package sheepdog.g9;
 
 import java.util.*;
 
-public class Tree {
-    public class TreeNode {
-        int sheepid;
-        Point position;
+public class Tree extends Strategy {
+    public String name = "Tree";
 
+    public Tree (int id, LinkedList<Strategy> strategyStack) {
+        super(id, strategyStack);
     }
 
-    int sheepid;
-
-    public void insert(Point node) {
-
+    public static double estimate(sheepdog.sim.Point[] dogs, sheepdog.sim.Point[] sheeps) {
+        return 0;
     }
-    public public TreeNode get_farthest() {
 
+    public sheepdog.sim.Point move(sheepdog.sim.Point[] dogs, sheepdog.sim.Point[] allsheeps) {
+
+        sheepdog.sim.Point me = dogs[id-1];
+        int num_dogs = dogs.length;
+
+        ArrayList<Point> buf = new ArrayList<Point>();
+
+        if (Global.mode) {
+            for (int i=0; i<Global.nblacks; ++i) {
+                if (allsheeps[i].x >= PlayerUtils.x) {
+                    Point p = new Point( allsheeps[i] );
+                    p.sid = i;
+                    buf.add(p);
+                }
+            }
+        } else {
+            for (int i=0; i<allsheeps.length; ++i) {
+                if (allsheeps[i].x >= PlayerUtils.x) {
+                    Point p = new Point( allsheeps[i] );
+                    p.sid = i;
+                    buf.add(p);
+                }
+            }
+        }
+
+        Point[] sheeps = buf.toArray(new Point[buf.size()]);
+
+        Arrays.sort(sheeps);
+
+        sheeps = get_sheeps_inside_sector(num_dogs, sheeps);
+
+        PointNode[] tree = PointNode.build(sheeps);
+
+        int sid_targetSheep = PointNode.get_farthest_sheep(tree);
+        int sid_push_to_here = tree[targetSheep.parent].sid;
+
+        if (done(allsheeps))
+            strategyStack.pop();
+
+        Fetch fetch = new Fetch(id, strategyStack, sid_targetSheep, allsheeps[sid_push_to_here]);
+        return fetch.move(dogs, allsheeps);
+    }
+
+    private Point[] get_sheeps_inside_sector(int num_dogs, Point[] sheeps) {
+        double partition = sheeps.length / num_dogs;
+
+        return Arrays.copyOfRange(sheeps, partition * (id-1), (id == num_dogs)?sheeps.length?(partition * (id+1)-1) );
+    }
+
+    private boolean done(sheepdog.sim.Point[] sheeps) {
+        for (int i = 0; i < sheeps.length; i++) {
+            if (sheeps[i].x > PlayerUtils.GATE.x)
+                return false;
+        }
+        return true;
+    }
+
+    public String toString() {
+        return String.format("%s\t%s\t dog  %d move to (%s)", name, stage.toString(), id, ret.toString());
     }
 }
+
