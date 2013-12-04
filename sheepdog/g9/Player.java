@@ -61,15 +61,15 @@ public class Player extends sheepdog.sim.Player {
             */
             if (Global.mode) {
                 double dog_over_sheep = (double)dogs.length / (double)Global.nblacks;
-                System.out.println( "dog_over_sheep = " + dog_over_sheep );
-                if (dog_over_sheep <= 1) {
+                //System.out.println( "dog_over_sheep = " + dog_over_sheep );
+                if (dog_over_sheep <= 2) {
                     Tree t = new Tree(id, strategyStack);
                     strategyStack.push(t);
                 }
             } else {
                 double dog_over_sheep = (double)dogs.length / (double)sheeps.length;
-                System.out.println( "dog_over_sheep = " + dog_over_sheep );
-                if (dog_over_sheep <= 1) {
+                //System.out.println( "dog_over_sheep = " + dog_over_sheep );
+                if (dog_over_sheep <= 2) {
                     Tree t = new Tree(id, strategyStack);
                     strategyStack.push(t);
                 }
@@ -89,7 +89,7 @@ public class Player extends sheepdog.sim.Player {
         Point moveTo;
         Strategy currentStrategy = strategyStack.getFirst();
         moveTo = currentStrategy.move(dogs, sheeps);
-        System.out.println(currentStrategy.toString());
+        //System.out.println(currentStrategy.toString());
         return moveTo.toSimPoint();
     }
 }

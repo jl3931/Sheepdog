@@ -49,6 +49,7 @@ public class Tree extends Strategy {
 
         //print_array(sheeps);
 
+        /*
         System.out.println("--------------------------------");
         System.out.println("for dog id : " + id);
         for (int i=0; i<sheeps.length; ++i) {
@@ -56,14 +57,16 @@ public class Tree extends Strategy {
                     + ", " );
         }
         System.out.println("--------------------------------");
+        */
 
         sheeps = get_sheeps_inside_sector(num_dogs, sheeps);
         Arrays.sort(sheeps, Point.PointDistanceComparator);
 
-        print_array(sheeps);
+        //print_array(sheeps);
 
         PointNode[] tree = PointNode.build(sheeps);
 
+        /*
         System.out.println("tree : ");
         for (int i=0; i<tree.length; ++i) {
             System.out.println("index: "+i+", sid: "+tree[i].sid+", parent:"+tree[i].parent
@@ -71,6 +74,7 @@ public class Tree extends Strategy {
         }
 
         System.out.println("tree finish");
+        */
 
         int index_targetSheep = PointNode.get_farthest_sheep(tree);
         int _parent = tree[index_targetSheep].parent;
