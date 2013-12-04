@@ -51,24 +51,23 @@ public class Point implements Comparable<Point> {
     }
 
     public int compareTo(Point p) {
-        /*
-           double sin_param = param.y / param.distance(PlayerUtils.GATE);
-           double sin_this = this.y / this.distance(PlayerUtils.GATE);
-           int compareQuantity = ((Fruit) compareFruit).getQuantity(); 
+        double sin_p = (p.y - 50.0) / p.distance(PlayerUtils.GATE);
+        double sin_this = (this.y - 50.0) / this.distance(PlayerUtils.GATE);
 
         // sort in clockwise order, descending order
-        if (sin_param - sin_this > 0) return 1;
-        if (sin_param - sin_this < 0) return -1;
+        if (sin_p - sin_this > 0) return 1;
+        if (sin_p - sin_this < 0) return -1;
         return 0;
-         */
 
-        double tan = (x - 50.0) / (y - 50.0);
-        double ptan = (p.x - 50.0) / (p.y - 50.0);
+        /*
+           double tan = (x - 50.0) / (y - 50.0);
+           double ptan = (p.x - 50.0) / (p.y - 50.0);
 
         // sort in clockwise order, descending order
         if (tan - ptan > 0) return 1;
         if (tan - ptan < 0) return -1;
         return 0;
+         */
     }
 
     public static Comparator<Point> PointDistanceComparator 
@@ -81,4 +80,3 @@ public class Point implements Comparable<Point> {
             }
         };
 }
-
