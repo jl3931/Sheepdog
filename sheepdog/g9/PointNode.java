@@ -18,6 +18,7 @@ public class PointNode extends Point {
         PointNode[] nodes = new PointNode[sheeps.length+1];
         // root
         PointNode pn = new PointNode(PlayerUtils.GATE);
+        pn.treeDistance = pn.distance(PlayerUtils.GATE);
         nodes[0] = pn;
         for (int i = 0; i < sheeps.length; i++) {
             pn = new PointNode(sheeps[i]);
@@ -33,6 +34,13 @@ public class PointNode extends Point {
         }
         return nodes;
     }
+
+    /*
+    public static PointNode[] build(Point[] sheeps) {
+        PointNode[] nodes = new PointNode[sheeps.length+1];
+    }
+
+    */
 
     public static int get_farthest_sheep(PointNode[] tree) {
         if (null == tree || 0 == tree.length) return -1;
