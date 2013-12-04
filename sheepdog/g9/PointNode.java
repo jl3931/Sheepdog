@@ -11,7 +11,8 @@ public class PointNode extends Point {
         x = p.x;
         y = p.y;
         parent = -1;
-        treeDistance = p.distance(PlayerUtils.GATE);
+        //treeDistance = p.distance(PlayerUtils.GATE);
+        treeDistance = Double.MAX_VALUE;
         sid = p.sid;
     }
 
@@ -19,19 +20,27 @@ public class PointNode extends Point {
         PointNode[] nodes = new PointNode[sheeps.length+1];
         // root
         PointNode pn = new PointNode(PlayerUtils.GATE);
+        pn.treeDistance = pn.distance(PlayerUtils.GATE);
         nodes[0] = pn;
         for (int i = 0; i < sheeps.length; i++) {
             pn = new PointNode(sheeps[i]);
             for (int j = 0; j <= i; j++) {
-                if (pn.treeDistance <= pn.distance(nodes[j])) {
+                if (pn.treeDistance >= pn.distance(nodes[j])) {
                     pn.parent = j;
-                    pn.treeDistance = pn.distance(nodes[j]);
+                    pn.treeDistance = pn.distance(nodes[j]) + nodes[j].treeDistance;
                 }
             }
             nodes[i+1] = pn;
         }
         return nodes;
     }
+
+    /*
+    public static PointNode[] build(Point[] sheeps) {
+        PointNode[] nodes = new PointNode[sheeps.length+1];
+    }
+
+    */
 
     public static int get_farthest_sheep(PointNode[] tree) {
         if (null == tree || 0 == tree.length) return -1;

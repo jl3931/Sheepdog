@@ -16,6 +16,12 @@ public class Tree extends Strategy {
     public Point move(Point[] dogs, Point[] allsheeps) {
 
         Point me = dogs[id-1];
+
+        if (me.x < PlayerUtils.GATE.x) {
+            return PlayerUtils.moveDogTo(me, PlayerUtils.GATE);
+        }
+
+
         int num_dogs = dogs.length;
 
         ArrayList<Point> buf = new ArrayList<Point>();
