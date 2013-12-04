@@ -42,12 +42,24 @@ public class Tree extends Strategy {
 
         Arrays.sort(sheeps);
 
+        /*
+        System.out.println("--------------------------------");
+        for (int i=0; i<sheeps.length; ++i) {
+            System.out.println(sheeps[i].x + ", " + sheeps[i].y);
+        }
+        System.out.println("--------------------------------");
+        */
+
         sheeps = get_sheeps_inside_sector(num_dogs, sheeps);
 
         PointNode[] tree = PointNode.build(sheeps);
 
         int sid_targetSheep = PointNode.get_farthest_sheep(tree);
         int _parent = tree[sid_targetSheep].parent;
+        if (-1 == _parent) { // root
+            return PlayerUtils.moveDogTo(me, PlayerUtils.GATE);
+        }
+
         int sid_push_to_here = tree[_parent].sid;
 
         if (done(allsheeps))
