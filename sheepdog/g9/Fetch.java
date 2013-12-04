@@ -82,7 +82,7 @@ public class Fetch extends Strategy {
                 // double check for valid sheep target
                 if (sheepId >= 0) {
                     boolean maybeInvalid = false;
-                    for (int i = 0; i < dogs.length; i++)
+                    for (int i = 0; i < dogs.length; i++) {
                         if (PlayerUtils.onTheLine(sheeps[sheepId], dogs[i], lastRoundDogs[i])) {
                             if (sheeps[sheepId].distance(dogs[i]) < sheeps[sheepId].distance(dogs[id-1]))
                                 maybeInvalid = true;
@@ -90,6 +90,7 @@ public class Fetch extends Strategy {
                                 && (i < (id - 1)))
                                 maybeInvalid = true;
                         }
+                    }
                     if (maybeInvalid)
                         invalidDelay++;
                     else

@@ -55,13 +55,14 @@ public class Tree extends Strategy {
         Arrays.sort(sheeps, Point.PointDistanceComparator);
         PointNode[] tree = PointNode.build(sheeps);
 
-        int sid_targetSheep = PointNode.get_farthest_sheep(tree);
-        int _parent = tree[sid_targetSheep].parent;
+        int index_targetSheep = PointNode.get_farthest_sheep(tree);
+        int _parent = tree[index_targetSheep].parent;
         if (-1 == _parent) { // root
-            return PlayerUtils.moveDogTo(me, PlayerUtils.GATE);
+            return PlayerUtils.moveDogTo(me, Fetch.DEFAULTIDLE);
         }
 
         int sid_push_to_here = tree[_parent].sid;
+        int sid_targetSheep = tree[index_targetSheep].sid;
 
         if (done(allsheeps))
             strategyStack.pop();

@@ -24,6 +24,7 @@ public class PlayerUtils {
     public static final double CLUSTERDISTANCE = 1;
     // Used for fetch strategy
     public static final double SMALLDISTANCE = 0.001;
+    public static final double TREEDISTANCE = 0.001;
 
 
     public static double vectorLength(double dx, double dy) {

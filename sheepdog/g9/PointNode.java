@@ -42,6 +42,6 @@ public class PointNode extends Point {
                 max_distance = tree[i].treeDistance;
             }
         }
-        return tree[max_index].sid;
+        return max_index;
     }
 }
