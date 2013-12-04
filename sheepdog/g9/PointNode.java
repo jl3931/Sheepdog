@@ -29,8 +29,19 @@ public class PointNode extends Point {
             }
             nodes[i+1] = pn;
         }
-        
         return nodes;
     }
 
+    public static PointNode get_farthest_sheep(PointNode[] tree) {
+        if (null == tree || 0 == tree.length) return null;
+        int max_distance = tree[0].treeDistance;
+        int max_index = 0;
+        for (int i=1; i<tree.length; ++i) {
+            if (max_distance < tree[i].treeDistance) {
+                max_index = i;
+                max_distance = tree[i].treeDistance;
+            }
+        }
+        return tree[max_index].sid;
+    }
 }

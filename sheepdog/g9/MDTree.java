@@ -21,51 +21,39 @@ public class MDTree extends Strategy {
         if (Global.mode) {
             sheeps = new Point[Global.nblacks];
             for (int i=0; i<Global.nblacks; ++i) {
-                sheeps[i] = new Point();
-                sheeps[i].x = allsheeps[i].x;
-                sheeps[i].y = allsheeps[i].y;
+                if (allsheeps[i].x < PlayerUtils.x) continue;
+                sheeps[i] = new Point( allsheeps[i] );
+                sheeps[i].sid = i;
             }
         } else {
             sheeps = new Point[allsheeps.length];
             for (int i=0; i<allsheeps.length; ++i) {
-                sheeps[i] = new Point();
-                sheeps[i].x = allsheeps[i].x;
-                sheeps[i].y = allsheeps[i].y;
+                if (allsheeps[i].x < PlayerUtils.x) continue;
+                sheeps[i] = new Point( allsheeps[i] );
+                sheeps[i].sid = i;
             }
             sheeps = allsheeps;
         }
 
         Arrays.sort(sheeps);
 
-        get_sheeps_inside_sector(num_dogs, sheeps);
+        sheeps = get_sheeps_inside_sector(num_dogs, sheeps);
 
-        Tree tree = new Tree(sheeps);
+        PointNode[] tree = PointNode.build(sheeps);
 
-        Point targetSheep = tree.get_farthest_sheep();
+        int sid_targetSheep = PointNode.get_farthest_sheep(tree);
 
-        Point push_to_here = targetSheep.parent;
+        int sid_push_to_here = tree[targetSheep.parent].sid;
 
         //TODO call fetch to push targetSheep to push_to_here
 
         return new Point();
     }
 
-    private void get_sheeps_inside_sector(int num_dogs, Point[] sheeps) {
+    private Point[] get_sheeps_inside_sector(int num_dogs, Point[] sheeps) {
+        double partition = sheeps.length / num_dogs;
 
-        double partition = 2.0 * Math.PI / num_dogs;
-        double up = Math.sin(Math.PI - id * partition);
-        double down = Math.sin(Math.PI - (id+1) * partition);
-
-        ArrayList<Point> buf = new ArrayList<Point>();
-
-        for (int i=0; i<sheeps.length; ++i) {
-            double sheep_sin = sheeps[i].y / sheeps[i].distance(new Point(0, 0));
-
-            if (down <= sheep_sin && sheep_sin <= up)
-                buf.add(sheep_sin);
-        }
-
-        sheeps = buf.toArray(new Point[buf.size()]);
+        return Arrays.copyOfRange(sheeps, partition * (id-1), (id == num_dogs)?sheeps.length?(partition * (id+1)-1) );
     }
 
     private boolean done(sheepdog.sim.Point[] sheeps) {

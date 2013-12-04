@@ -3,6 +3,7 @@ package sheepdog.g9;
 public class Point implements comparable<Point> {
     public double x;
     public double y;
+    public int sid;
 
     public Point() { x = 0; y = 0; }
 
@@ -42,12 +43,12 @@ public class Point implements comparable<Point> {
         return String.format("x = %f, y = %f", x, y);
     }
 
-    public int compareTo(Point param) {
-        double sin_param = param.y / param.distance(new Point(0, 0));
-        double sin_this = this.y / this.distance(new Point(0, 0));
-        int compareQuantity = ((Fruit) compareFruit).getQuantity(); 
+    public int compareTo(Point p) {
+        double tan = (x - 50.0) / (y - 50.0);
+        double ptan = (p.x - 50.0) / (p.y - 50.0);
 
         // sort in clockwise order, descending order
-        return sin_param - sin_this;
+        return tan - ptan;
     }
 }
+
