@@ -52,6 +52,7 @@ public class Tree extends Strategy {
 
         sheeps = get_sheeps_inside_sector(num_dogs, sheeps);
 
+        Arrays.sort(sheeps, Point.PointDistanceComparator);
         PointNode[] tree = PointNode.build(sheeps);
 
         int sid_targetSheep = PointNode.get_farthest_sheep(tree);

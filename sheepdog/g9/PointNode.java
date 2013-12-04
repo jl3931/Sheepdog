@@ -13,7 +13,7 @@ public class PointNode extends Point {
         parent = -1;
         treeDistance = p.distance(PlayerUtils.GATE);
     }
-    
+
     public static PointNode[] build(Point[] sheeps) {
         PointNode[] nodes = new PointNode[sheeps.length+1];
         // root

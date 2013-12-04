@@ -1,5 +1,7 @@
 package sheepdog.g9;
 
+import java.util.Comparator;
+
 public class Point implements Comparable<Point> {
     public double x;
     public double y;
@@ -49,6 +51,17 @@ public class Point implements Comparable<Point> {
     }
 
     public int compareTo(Point p) {
+        /*
+           double sin_param = param.y / param.distance(PlayerUtils.GATE);
+           double sin_this = this.y / this.distance(PlayerUtils.GATE);
+           int compareQuantity = ((Fruit) compareFruit).getQuantity(); 
+
+        // sort in clockwise order, descending order
+        if (sin_param - sin_this > 0) return 1;
+        if (sin_param - sin_this < 0) return -1;
+        return 0;
+         */
+
         double tan = (x - 50.0) / (y - 50.0);
         double ptan = (p.x - 50.0) / (p.y - 50.0);
 
@@ -57,5 +70,16 @@ public class Point implements Comparable<Point> {
         if (tan - ptan < 0) return -1;
         return 0;
     }
+
+    public static Comparator<Point> PointDistanceComparator 
+        = new Comparator<Point>() {
+
+            public int compare(Point p1, Point p2) {
+                double d1 = p1.distance(PlayerUtils.GATE);
+                double d2 = p2.distance(PlayerUtils.GATE);
+                return (d1 - d2 > 0) ? 1:-1;
+            }
+        };
 }
+
 
