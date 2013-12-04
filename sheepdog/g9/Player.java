@@ -41,18 +41,18 @@ public class Player extends sheepdog.sim.Player {
                 double sweepEst2 = sweepEst + inverseFetchEst;
                 double treeEst2 = treeEst + inverseFetchEst;
 
-                if (sweepEst2 > fetchEst2 && sweepEst2 > treeEst2) {
+                if (sweepEst2 < fetchEst2 && sweepEst2 < treeEst2) {
                     Sweep sweep = new Sweep (id, strategyStack);
                     strategyStack.push(sweep);
-                } else if (treeEst2 > fetchEst2 && treeEst2 > sweepEst2) {
+                } else if (treeEst2 < fetchEst2 && treeEst2 < sweepEst2) {
                     Tree t = new Tree(id, strategyStack);
                     strategyStack.push(t);
                 }
             } else {
-                if (fetchEst > sweepEst) {
+                if (sweepEst < fetchEst && sweepEst < treeEst) {
                     Sweep sweep = new Sweep (id, strategyStack);
                     strategyStack.push(sweep);
-                } else if (treeEst > fetchEst && treeEst > sweepEst) {
+                } else if (treeEst < fetchEst && treeEst < sweepEst) {
                     Tree t = new Tree(id, strategyStack);
                     strategyStack.push(t);
                 }
