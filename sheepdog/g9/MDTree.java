@@ -2,10 +2,10 @@ package sheepdog.g9;
 
 import java.util.*;
 
-public class MDTree extends Strategy {
-    public String name = "MDTree";
+public class Tree extends Strategy {
+    public String name = "Tree";
 
-    public MDTree (int id, LinkedList<Strategy> strategyStack) {
+    public Tree (int id, LinkedList<Strategy> strategyStack) {
         super(id, strategyStack);
     }
 
@@ -14,6 +14,7 @@ public class MDTree extends Strategy {
     }
 
     public sheepdog.sim.Point move(sheepdog.sim.Point[] dogs, sheepdog.sim.Point[] allsheeps) {
+
         sheepdog.sim.Point me = dogs[id-1];
         int num_dogs = dogs.length;
         Point[] sheeps; // Point implements comparable
@@ -42,12 +43,13 @@ public class MDTree extends Strategy {
         PointNode[] tree = PointNode.build(sheeps);
 
         int sid_targetSheep = PointNode.get_farthest_sheep(tree);
-
         int sid_push_to_here = tree[targetSheep.parent].sid;
 
-        //TODO call fetch to push targetSheep to push_to_here
+        if (done(allsheeps))
+            strategyStack.pop();
 
-        return new Point();
+        Fetch fetch = new Fetch(id, strategyStack, sid_targetSheep, allsheeps[sid_push_to_here]);
+        return fetch.move(dogs, allsheeps);
     }
 
     private Point[] get_sheeps_inside_sector(int num_dogs, Point[] sheeps) {
