@@ -86,7 +86,7 @@ public class Fetch extends Strategy {
                             return PlayerUtils.moveDogTo(current, DEFAULTIDLE);
                     }
                 // double check for valid sheep target
-                if ((sheepId >= 0) && (turnsLeft < 0)) {
+                if ((sheepId >= 0) && (turnsLeft < 0) && lastRoundDogs != null) {
                     boolean maybeInvalid = false;
                     for (int i = 0; i < dogs.length; i++) {
                         if (PlayerUtils.onTheLine(sheeps[sheepId], dogs[i], lastRoundDogs[i])) {

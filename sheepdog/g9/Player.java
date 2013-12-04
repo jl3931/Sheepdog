@@ -29,6 +29,7 @@ public class Player extends sheepdog.sim.Player {
 
         if (!strategyInit) {
             // condition to use strategy should be put here
+            /*
             double fetchEst = Fetch.estimate(dogs, sheeps);
             double sweepEst = Sweep.estimate(dogs, sheeps);
             double treeEst = Tree.estimate(dogs, sheeps);
@@ -53,6 +54,22 @@ public class Player extends sheepdog.sim.Player {
                     Sweep sweep = new Sweep (id, strategyStack);
                     strategyStack.push(sweep);
                 } else if (treeEst < fetchEst && treeEst < sweepEst) {
+                    Tree t = new Tree(id, strategyStack);
+                    strategyStack.push(t);
+                }
+            }
+            */
+            if (Global.mode) {
+                double dog_over_sheep = (double)dogs.length / (double)Global.nblacks;
+                System.out.println( "dog_over_sheep = " + dog_over_sheep );
+                if (dog_over_sheep <= 1) {
+                    Tree t = new Tree(id, strategyStack);
+                    strategyStack.push(t);
+                }
+            } else {
+                double dog_over_sheep = (double)dogs.length / (double)sheeps.length;
+                System.out.println( "dog_over_sheep = " + dog_over_sheep );
+                if (dog_over_sheep <= 1) {
                     Tree t = new Tree(id, strategyStack);
                     strategyStack.push(t);
                 }

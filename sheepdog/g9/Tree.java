@@ -75,7 +75,7 @@ public class Tree extends Strategy {
         int index_targetSheep = PointNode.get_farthest_sheep(tree);
         int _parent = tree[index_targetSheep].parent;
 
-        if (-1 == _parent) { // root
+        if (-1 == _parent || (sheeps.length <= 1)) { // root
             double x = PlayerUtils.GATE.x;
             double y = PlayerUtils.GATEOPENLEFT +
                 (PlayerUtils.GATEOPENRIGHT - PlayerUtils.GATEOPENLEFT) *
