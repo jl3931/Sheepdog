@@ -8,7 +8,7 @@ sheepdog/g9/Player.class: sheepdog/g9/*.java
 
 .PHONY: run
 run: all
-	java -ea sheepdog.sim.Sheepdog g9 7 200 20 true true
+	java -ea sheepdog.sim.Sheepdog g9 8 20 20 false true
 
 .PHONY: clean
 clean:

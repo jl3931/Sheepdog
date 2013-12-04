@@ -9,20 +9,20 @@ public class Tree extends Strategy {
         super(id, strategyStack);
     }
 
-    public static double estimate(sheepdog.sim.Point[] dogs, sheepdog.sim.Point[] sheeps) {
+    public static double estimate(Point[] dogs, Point[] sheeps) {
         return 0;
     }
 
-    public sheepdog.sim.Point move(sheepdog.sim.Point[] dogs, sheepdog.sim.Point[] allsheeps) {
+    public Point move(Point[] dogs, Point[] allsheeps) {
 
-        sheepdog.sim.Point me = dogs[id-1];
+        Point me = dogs[id-1];
         int num_dogs = dogs.length;
 
         ArrayList<Point> buf = new ArrayList<Point>();
 
         if (Global.mode) {
             for (int i=0; i<Global.nblacks; ++i) {
-                if (allsheeps[i].x >= PlayerUtils.x) {
+                if (allsheeps[i].x >= PlayerUtils.GATE.x) {
                     Point p = new Point( allsheeps[i] );
                     p.sid = i;
                     buf.add(p);
@@ -30,7 +30,7 @@ public class Tree extends Strategy {
             }
         } else {
             for (int i=0; i<allsheeps.length; ++i) {
-                if (allsheeps[i].x >= PlayerUtils.x) {
+                if (allsheeps[i].x >= PlayerUtils.GATE.x) {
                     Point p = new Point( allsheeps[i] );
                     p.sid = i;
                     buf.add(p);
@@ -47,7 +47,8 @@ public class Tree extends Strategy {
         PointNode[] tree = PointNode.build(sheeps);
 
         int sid_targetSheep = PointNode.get_farthest_sheep(tree);
-        int sid_push_to_here = tree[targetSheep.parent].sid;
+        int _parent = tree[sid_targetSheep].parent;
+        int sid_push_to_here = tree[_parent].sid;
 
         if (done(allsheeps))
             strategyStack.pop();
@@ -57,12 +58,13 @@ public class Tree extends Strategy {
     }
 
     private Point[] get_sheeps_inside_sector(int num_dogs, Point[] sheeps) {
-        double partition = sheeps.length / num_dogs;
+        int partition = sheeps.length / num_dogs;
 
-        return Arrays.copyOfRange(sheeps, partition * (id-1), (id == num_dogs)?sheeps.length?(partition * (id+1)-1) );
+        return Arrays.copyOfRange(sheeps, partition * (id-1), 
+                (id == num_dogs) ? sheeps.length : (partition * id -1) );
     }
 
-    private boolean done(sheepdog.sim.Point[] sheeps) {
+    private boolean done(Point[] sheeps) {
         for (int i = 0; i < sheeps.length; i++) {
             if (sheeps[i].x > PlayerUtils.GATE.x)
                 return false;
@@ -71,7 +73,8 @@ public class Tree extends Strategy {
     }
 
     public String toString() {
-        return String.format("%s\t%s\t dog  %d move to (%s)", name, stage.toString(), id, ret.toString());
+        return "";
+        //return String.format("%s\t%s\t dog  %d move to (%s)", name, stage.toString(), id, ret.toString());
     }
 }
 

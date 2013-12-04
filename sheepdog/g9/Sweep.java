@@ -27,7 +27,7 @@ public class Sweep extends Strategy {
     }
 
     public static double estimate(Point[] dogs, Point[] sheeps) {
-        return 10000.0/(dogs.length);
+        return 1 / (0.0000577936 * dogs.length + 0.0011124);
     }
 
     // Deterministic Finite Automata for current dog

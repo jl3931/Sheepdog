@@ -33,7 +33,8 @@ public class Player extends sheepdog.sim.Player {
             double fetchEst = Fetch.estimate(dogs, sheeps);
             double sweepEst = Sweep.estimate(dogs, sheeps);
             double treeEst = Tree.estimate(dogs, sheeps);
-            System.out.println(fetchEst + " " + sweepEst);
+            System.out.println(fetchEst + " " + sweepEst + " " + treeEst);
+
             if (Global.mode) {
                 double inverseFetchEst = fetchEst / Global.nblacks * (sheeps.length - Global.nblacks);
 

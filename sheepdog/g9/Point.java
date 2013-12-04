@@ -1,6 +1,6 @@
 package sheepdog.g9;
 
-public class Point implements comparable<Point> {
+public class Point implements Comparable<Point> {
     public double x;
     public double y;
     public int sid;
@@ -13,6 +13,11 @@ public class Point implements comparable<Point> {
     }
 
     public Point(sheepdog.sim.Point p) {
+        x = p.x;
+        y = p.y;
+    }
+
+    public Point(Point p) {
         x = p.x;
         y = p.y;
     }
@@ -48,7 +53,9 @@ public class Point implements comparable<Point> {
         double ptan = (p.x - 50.0) / (p.y - 50.0);
 
         // sort in clockwise order, descending order
-        return tan - ptan;
+        if (tan - ptan > 0) return 1;
+        if (tan - ptan < 0) return -1;
+        return 0;
     }
 }
 
