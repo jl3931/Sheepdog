@@ -131,14 +131,14 @@ public class PlayerUtils {
         return moveSheep(id, dogs, sheeps);
     }
 
-    public static Point getTargetDogPoint(Point targetSheepPoint, Point targetPoint) {
+    public static Point getTargetDogPoint(Point targetSheepPoint, Point targetPoint, double distance) {
         double dx = targetSheepPoint.x - targetPoint.x;
         double dy = targetSheepPoint.y - targetPoint.y;
         double d = vectorLength(dx, dy);
         double sin = dx/d;
         double cos = dy/d;
-        return new Point(targetSheepPoint.x + SMALLDISTANCE * sin,
-                         targetSheepPoint.y + SMALLDISTANCE * cos);
+        return new Point(targetSheepPoint.x + distance * sin,
+                         targetSheepPoint.y + distance * cos);
 
     }
 
